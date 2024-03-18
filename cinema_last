@@ -1,0 +1,673 @@
+CREATE TABLE "tiny_Schemas"."student" (
+"StudentID" character(6) NOT NULL,
+"FirstName" character varying(20),
+"LastName" character varying(10),
+"Address" character varying(50),
+"Note" character varying(20),
+"Gender" character(5),
+clazz_id character varying(15) );
+
+CREATE TABLE "tiny_Schemas"."clazz" (
+"clazzID" character(6) NOT NULL,
+"Name" character varying(20),
+"lecturer_id" character(6)	);
+CREATE TABLE {
+
+CREATE TABLE "tiny_Schemas"."lecturer" (
+"lecturer_id" character(6) NOT NULL,
+"FirstName" character varying(20),
+"LastName" character varying(10),
+"Gender" character(5),
+"Address" character varying(50),
+"Email" character varying(50));
+
+INSERT INTO "clazz" ("clazzID","Name","lecturer_id") (
+VALUES	('ST001','Duy','LT01'),
+		('ST002','Tu','LT02'),
+		('ST003','Hoang','LT03'),
+		('ST004','Giang','LT04')) ;
+
+	#key
+	ALTER TABLE "tiny_Schemas"."student" 
+	ADD CONSTRAINT pk_customer PRIMARY KEY("StudentID");
+	
+	
+	ALTER TABLE "tiny_Schemas"."clazz"
+	ADD CONSTRAINT pk_class PRIMARY KEY("clazzID");
+	
+	ALTER TABLE "tiny_Schemas"."lecturer"
+	ADD CONSTRAINT pk_lecturer PRIMARY KEY("lecturer_id");
+	
+	ALTER TABLE "tiny_Schemas"."clazz"
+	ADD CONSTRAINT fk_customer FOREIGN KEY("lecturer_id") REFERENCES "tiny_Schemas"."lecturer"("lecturer_id");
+	
+	ALTER TABLE "tiny_Schemas"."student"
+	ADD CONSTRAINT fk_student FOREIGN KEY("clazz_id") REFERENCES "tiny_Schemas"."clazz"("clazzID");
+	
+}
+
+ALTER TABLE {
+	
+}		
+
+UPDATE table_name SET truong_thuoc tinh = 'name' WHERE 
+
+
+
+
+# ĐẠI SỐ QUAN HỆ
+
+select *
+from student,clazz
+where student.clazz_id = clazz.clazz_id
+	and clazz.name = 'CNTT2.01-K62'
+order by first_name ASC, last_name DESC;
+
+select s.*
+from student as s ,clazz c
+where s.clazz_id = c.clazz_id
+	and c.name = 'CNTT2.01-K62'
+order by first_name ASC, last_name DESC;
+
+
+select s.*
+from student as s (INNER) JOIN clazz c ON ( s.clazz_id= c.clazz_id )
+where s.clazz_id = c.clazz_id
+	and c.name = 'CNTT2.01-K62'
+order by first_name ASC, last_name DESC;
+
+
+
+select s.*
+from student as s (INNER) NATURAL JOIN clazz c
+where s.clazz_id = c.clazz_id
+	and c.name = 'CNTT2.01-K62'
+order by first_name ASC, last_name DESC;
+
+
+
+select *
+from student as s JOIN clazz c ON ( s.clazz_id=c.clazz_id)
+where upper(c.name) LIKE '%CNTT%';
+		
+		#	lower(c.name) LIKE "%cntt%"
+
+
+
+
+select clazz.clazz_id,name,monitor_id, first_name,last_name
+from clazz JOIN student ON ( monitor_id=student_id );
+
+select clazz.clazz_id,name,monitor_id, first_name,last_name
+from clazz LEFT JOIN student ON ( monitor_id=student_id );
+
+
+
+select clazz.clazz_id,name,monitor_id, 
+		first_name || ' ' || last_name as fullname
+from clazz LEFT JOIN student ON ( monitor_id=student_id );
+
+
+--18 ( Cách 1: Dùng hàm max() ) ( In ra điểm thông tin của sinh viên có điểm cao nhất của môn IT3080 trong học kì 20172 )
+WITH tmp as 
+(
+	select student_id, midterm_score*(1-percentage_final_exam/100.0) + final_score*percentage_final_exam/100.0 as subject_score 
+	from enrollment e join subject s using (subject_id)
+	where subject_id= 'IT3080' and semester = '20172'
+)
+select s.*, subject_score
+from tmp join student s using (student_id)
+where subject_score =
+		(
+			select max(subject_score) 
+			from tmp
+		);
+		
+--18 ( cách 2: Dùng >= ALL ) ( In ra điểm thông tin của sinh viên có điểm cao nhất của môn IT3080 trong học kì 20172 )
+WITH tmp as 
+(
+	select student_id, midterm_score*(1-percentage_final_exam/100.0) + final_score*percentage_final_exam/100.0 as subject_score 
+	from enrollment e join subject s using (subject_id)
+	where subject_id= 'IT3080' and semester = '20172'
+)
+select s.*, subject_score
+from tmp join student s using (student_id)
+where subject_score >=ALL
+		(
+			select subject_score
+			from tmp
+		);
+
+--19 ( Cách 1: group by(ph nhómân) rồi count(đếm từng nhóm) ) ( In ra danh sách các lớp có số sinh viên đông nhất )
+
+select clazz_id, count(*)
+from student
+group by clazz_id
+having count(*) >= ALL ( 
+		select count(*)
+		from student
+		group by clazz_id 
+	);
+
+--19 ( Cách 2: Dùng WITH ) ( In ra danh sách các lớp có số sinh viên đông nhất )
+WITH tmp as 
+(
+	select clazz_id,count(*) as ss
+	from student
+	group by clazz_id
+)
+select clazz_id, ss
+from tmp
+where ss =
+		(
+			select max(ss) 
+			from tmp
+		);
+		
+						
+						
+------------- View -------------
+
+-- Bài 1 --		
+-- Tạo view--
+CREATE OR REPLACE View student_shortinfos as
+	select student_id, first_name,last_name,gender, dob,clazz_id
+	from student;
+	
+-- kiểm tra view --
+select v.*
+from student_shortinfos v join clazz c using (clazz_id);
+
+
+-- sửa --
+UPDATE student_shortinfos SET dob ='2000-06-02'
+where student_id = '20170001';
+
+-- thêm --
+insert into student_shortinfos ( student_id, first_name, last_name, dob )
+values ('20230001','Lan','Hoang', '2003-09-12');
+
+-- xóa --
+DELETE from student_shortinfos where student_id='20230001';
+
+-- Bài 2 Create a view from eduDB, named student_class_shortinfos, this 
+-- view contains: student_id, firstname, lastname, gender, class name.
+--
+	-- Tạo view--
+	CREATE OR REPLACE VIEW student_class_shortinfos as
+	select s.student_id, first_name, last_name, gender, c.name
+	from student s left join clazz c using (clazz_id);
+	
+	-- Kiểm tra view --
+	select v.*
+	from student_class_shortinfos v;
+	
+	-- update/delete/insert into -- 
+		--không dùng được do khi tạo view đã ko dùng 1 bảng duy nhất -- 
+		
+-- Bài 3 Create a view from eduDB, named class_infos, this view contains: 
+--class_id, class name, number of students in this class.--
+		-- Tạo view --
+		CREATE OR REPLACE VIEW class_infos as
+		select clazz_id,c.name, count(clazz_id) as student
+		from clazz c left join student s using (clazz_id)
+			GROUP BY clazz_id;
+			
+		-- Kiểm tra view -- 
+		select v.*
+		from class_infos v;
+	
+-- Bài 4 Create a view from eduDB, named best_GPA, this view contains all 
+--students with at least 7.5 in GPA in semester 20172 : student_id, 
+--student fullname, GPA. Sort the list in descending order of GPA.
+
+CREATE OR REPLACE VIEW Best_GPA AS
+(
+	WITH A as 
+	(
+		select e.student_id,e.subject_id,credit, midterm_score*(1-percentage_final_exam/100.0) + final_score*percentage_final_exam/100.0 as subject_score 
+		from enrollment e join subject s using (subject_id)
+		where semester = '20172'
+	)
+	select student_id, sum(credit * subject_score)/sum(credit) as GPA  
+	from A
+	GROUP BY student_id
+	HAVING sum(credit * subject_score)/sum(credit)>=7.5
+	ORDER BY GPA DESC
+);
+
+-- Trigger dùng để update/delete/insert into 
+		-- khi tạo view đã ko dùng 1 bảng duy nhất -- 
+-- Tạo trigger FUNCTION --
+CREATE OR REPLACE FUNCTION function_student_class_view() RETURNS trigger AS
+$$
+BEGIN
+	-- update student -- 
+	UPDATE student SET student_id= NEW.student_id, 
+					   first_name = NEW.first_name, 
+					   last_name= NEW.last_name 
+	where student_id= OLD.student_id;
+	RETURN NEW;	
+END;
+$$
+LANGUAGE plpgsql; 
+ 
+-- Tạo trigger -- 
+CREATE TRIGGER update_student_class_view
+INSTEAD OF UPDATE ON student_class_shortinfos
+FOR EACH ROW
+EXECUTE PROCEDURE function_student_class_view();
+
+
+--1--d
+WITH tmp as 
+	(
+		select MSNCC,count(MSMH) as SoLuong
+		from CungCap
+		group by MSNCC
+		order by MSNCC
+	)
+select 
+from tmp join CungCap cc using (MSNCC) ncc join MatHang mh using (MSMH)
+where tmp.MSNCC=cc.MSNCC and cc.MSMH=mh.MSMH and SoLuong=sum(MauSac='Do');
+
+--1--e
+(
+select MSNCC
+from CungCap join MatHang using (MSNCC) 
+where (MauSac='Do') or (MauSac='Xanh') 
+)
+EXCEPT 
+(
+select MSNCC
+from CungCap join MatHang using (MSNCC)
+where (count(MauSac='Do')=0 and count(MauSac='Xanh')=0 and count(MauSac!='Do')>0 and count(MauSac!='Xanh')>0)
+);
+
+--1--f
+WITH tmp as 
+	(
+		select MSNCC,count(MSMH) as SoLuong
+		from CungCap
+		group by MSNCC
+		order by MSNCC
+	)
+select 
+from tmp join CungCap cc using (MSNCC) ncc join MatHang mh using (MSMH)
+where tmp.MSNCC=cc.MSNCC and cc.MSMH=mh.MSMH and (SoLuong=sum(MauSac='Do') or SoLuong=sum(MauSac='Xanh'));
+
+
+--1--h
+WITH tmp as 
+(
+select MSMH, count(MSNCC) as SoLuongNCC
+from CungCap
+group by MSMH  
+)
+select MSMH
+from tmp
+where SoLuongNCC>=2;
+
+
+--1--i
+select MSMH, GiaTien
+from CungCap join NCC using (MSNCC)
+where GiaTien=max(
+	select max(GiaTien)
+	from CungCap 
+	where TenNCC='Dustin'
+);
+
+--1--j
+select MSMH
+
+
+--------------------------------------------------------------------------
+-- Cau 1 ( DONE ) 
+select orderlines.*
+from products join orderlines using (prod_id)
+where title = 'ADAPTATION SECRETS' or title = 'AFFAIR GENTLEMENT';
+--Cau 2  ( NOT DONE )
+-- in thông tin khách hàng mua cả 2 sản phẩm ( dùng INTERSECT ) 
+--Cau 3  ( NOT DONE ) 
+(
+select customers.*
+from orderlines join orders using (orderid) join customers using (customerid)
+)
+EXCEPT 
+(
+select customers.*
+from orderlines join orders using (orderid) join customers using (customerid)
+where MONTH(orderdate) =12 and YEAR(orderdate)=2004
+);
+
+-- Cau 4
+select ol.orderlineid, p.prod_id, p.title, o.quantity, unit price, amount
+from orderlines ol join products p using ()
+LIMIT 1;
+
+-- Cau 5 
+WITH tmp as 
+(
+	select income
+	from customers c join orders o using (customerid) join orderlines ol using (orderid) join products p using (prod_id)
+	where p.title= 'AIRPORT ROBBERS'
+)
+select AVG(income)
+from tmp;
+
+
+-- Cau 6
+select c.*
+from customers c 
+where gender='F' and income>=10000 ;
+
+-- Cau 7
+WITH tmp as 
+(
+	select c.customerid, c.firstname || c.lastname as Full_Name ,count(o.orderid) as So_Luong_Don_Dat_Hang
+	from customers c join orders o using (customerid)
+	group by customerid
+	order by So_Luong_Don_Dat_Hang DESC
+)
+select * 
+from tmp;
+
+-- Cau 8 
+WITH tmp as 
+(
+	select p.prod_id, o.quantity*p.price as revenu
+	from  orderlines o join products p using (prod_id)
+	group by p.prod_id
+)
+select *
+from tmp
+order by revenu DESC
+LIMIT 10;
+
+
+-- Cau 9
+select products.*
+from products join orderlines using (prod_id)
+where  orderdate= '2023-06-09';
+
+-- Cau 10
+select min(price),max(price),avg(price)
+from products;
+
+-- Cau 11
+	select p.*
+	from products p join orderlines using (prod_id) join orders using (orderid) join customers c using (customerid)
+	where p.price= (
+			select p.price
+			from products p join orderlines using (prod_id) join orders using (orderid) join customers c using (customerid)
+			where c.gender='M'
+	);
+
+
+
+----------------------------------------------
+-- CREATE a PL/pgSQL Function 
+-- out = in1 * factor + in2 
+-- fact = CONSTANT 
+CREATE OR REPLACE FUNCTION store.test ( IN var1 integer, IN var2 integer, OUT result integer ) AS
+$$
+DECLARE 
+	factor integer :=3;
+	
+BEGIN 
+	result := var1* factor + var2; 
+END;
+$$
+LANGUAGE plpgsql 
+IMMUTABLE 
+RETURNS NULL ON NULL INPUT;
+
+
+
+select store.test (1,2);
+select store.test (1,null);
+
+create or replace role joe with login password 'joe';
+
+-- Trao quyền thực hiện trên Function ( GRANT )
+GRANT execute ON FUNCTION store.test TO joe;
+
+
+
+-- Bai 1 
+CREATE OR REPLACE FUNCTION number_of_students ( IN varclazz_id char(8), OUT number_student integer ) AS
+$$
+ 
+BEGIN
+	select into number_student count(student_id), clazz_id
+	from student 
+	where ( clazz_id = varclazz_id ); 
+END;
+$$
+LANGUAGE plpgsql 
+STABLE --IMMUTABLE ? 
+RETURNS NULL ON NULL INPUT;
+
+select number_of_students('20172201');
+-- Bai 2 
+-- a 
+
+CREATE OR REPLACE FUNCTION number_of_students ( OUT number_student integer ) AS
+$$
+DECLARE varclazz_id char(8)
+BEGIN
+	for varclazz_id IN select clazz_id from clazz LOOP
+	update clazz
+	set number_students = number_student(varclazz_id)
+	where varclazz_id=clazz_id
+	END LOOP;
+END;
+$$
+LANGUAGE plpgsql 
+STABLE --IMMUTABLE ? 
+RETURNS NULL ON NULL INPUT;
+
+
+alter table clazz
+add column number_students integer;
+
+
+create or replace function update_number_students() returns void
+as
+$$
+DECLARE varclazz_id char(8)
+BEGIN
+	update clazz
+	set number_students = number_student(clazz.clazz_id);
+END;
+$$
+LANGUAGE plpgsql;
+
+
+-- practice 2
+alter table clazz
+add column number_students integer;
+
+create or replace function update_number_students() returns void
+as
+$$
+declare var1 char(8);
+begin
+	for var1 in select clazz_id from clazz loop
+	update clazz
+	set number_students = number_of_student(var1)
+	where clazz_id = var1;
+	end loop;
+	return;
+end;
+$$
+language plpgsql;
+select update_number_students();
+select * from clazz
+-- practive 2 v2
+create or replace function update_number_students() returns void
+as
+$$
+begin
+	update clazz
+	set number_students = number_of_student(clazz_id);
+	return;
+end;
+$$
+language plpgsql;
+select * from update_number_students();
+select * from clazz;
+
+
+
+-- Bai 3
+CREATE or REPLACE FUNCTION student_results ( IN var_student_id char(8), var_semester char(5), OUT student_id char (8),semester char(5), GPA float) AS 
+
+$$
+BEGIN
+	CREATE OR REPLACE VIEW Best_GPA AS
+(
+	WITH A as 
+	(
+		select e.student_id,e.subject_id,credit, midterm_score*(1-percentage_final_exam/100.0) + final_score*percentage_final_exam/100.0 as subject_score 
+		from enrollment e join subject s using (subject_id)
+		where var_semester = semester and var_student_id = student_id
+	)
+	select student_id, sum(credit * subject_score)/sum(credit) as GPA
+	from A;
+);
+END;
+
+$$
+language plpgsql;
+
+
+
+--- Trigger
+
+Create OR REPLACE Trigger insteadof_update
+INSTEAD OF UPDATE ON student_class_shortinfos
+FOR EACH ROW
+EXECUTE PROCEDURE tgfnc_insteadof_update();
+
+CREATE OR REPLACE FUNCTION tgfnc_insteadof_update() RETURNS TRIGGER as 
+$$
+--DECLARE 
+	--< variable declarations >
+BEGIN
+	if (name is distinct from NULL )
+		update student set last_name=NEW.last_name,
+							first_name=NEW.first_name,
+							gender=NEW.gender
+		where student_id=OLD.student_id;
+		RETURN NEW;
+	end if;
+	RAISE NOTICE 'Cannot update attributes on % except last_name,first_name,gender,dob', TG_RELNAME;
+	RETURN NULL;
+
+END;
+$$ 
+language plpgsql;
+
+update student_class_shortinfos set last_name='ABC', first_name='Thu',gender='F' where student_id='20170002';
+
+
+--update
+CREATE OR REPLACE FUNCTION tgfnc_insteadof_update() RETURNS TRIGGER as 
+$$
+--DECLARE 
+	--< variable declarations >
+BEGIN
+	if ( old.student_id is distinct from new.student_id 
+		or old.name is distinct from new.name) 
+	then 
+		RAISE NOTICE 'Cannot update attributes on % except last_name,first_name,gender,dob', TG_RELNAME;
+		RETURN NULL;
+	end if;
+	
+	if ( old.last_name is distinct from new.last_name 
+		or old.first_name is distinct from new.first_name
+		or old.gender is distinct from new.gender)
+	then 
+		update student set last_name=NEW.last_name,
+							first_name=NEW.first_name,
+							gender=NEW.gender
+		where student_id = old.student_id;
+		RETURN NEW;
+	end if;
+END;
+$$ 
+language plpgsql;
+
+
+--delete
+CREATE OR REPLACE FUNCTION tgfnc_insteadof_delete() RETURNS TRIGGER as 
+$$
+begin
+	delete from student
+	where student_id = old.student_id;
+	return null;	
+end;
+$$
+language plpgsql;
+
+
+--insert
+CREATE OR REPLACE FUNCTION tgfnc_insteadof_insert() RETURNS TRIGGER as 
+$$
+--DECLARE 
+	--< variable declarations >
+BEGIN
+		insert into student( student_id,first_name,last_name,gender )
+		values( '20215016','Khanh','Duy','M')
+		RETURN NEW;
+	
+END;
+$$ 
+language plpgsql;
+
+update student_class_shortinfos set last_name='ABC', first_name='Thu',gender='F' where student_id='20170002';
+
+
+-- Triggers update
+	Create OR REPLACE Trigger insteadof_update
+	INSTEAD OF UPDATE ON student_class_shortinfos
+	FOR EACH ROW
+	EXECUTE PROCEDURE tgfnc_insteadof_update();
+-- Triggers delete
+	Create OR REPLACE Trigger insteadof_delete
+	INSTEAD OF DELETE ON student_class_shortinfos
+	FOR EACH ROW
+	EXECUTE PROCEDURE tgfnc_insteadof_delete();
+-- Triggers update
+	Create OR REPLACE Trigger insteadof_insert
+	INSTEAD OF INSERT ON student_class_shortinfos
+	FOR EACH ROW
+	EXECUTE PROCEDURE tgfnc_insteadof_insert();
+
+
+create or replace function tgfnc_insteadof_delete() 
+returns trigger as
+$$
+begin
+	delete from student
+	where student_id = old.student_id;
+	return null;	
+end;
+$$
+language plpgsql;
+
+-- update = Triggers
+update student_class_shortinfos
+set first_name='Duy'
+where student_id='20170003';
+
+--delete = trigger
+delete from student_class_shortinfos
+where student_id= '20170003';
+
+--insert = Triggers
+insert into student_class_shortinfos( student_id, first_name, last_name, gender, name )
+values ( '20215016','Khanh','Duy','M','IT-E6.666666' );
+
