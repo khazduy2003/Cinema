@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="./fontawesome-free-6.4.2-web/css/all.css" class="">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý rạp chiếu phim</title>
+    <link rel="icon" href="./assets/img/logo.ico" type="img/x-icon">
+    <link rel="stylesheet" href="./fontawesome-free-6.4.2-web/css/all.css" class="">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-image: url("./assets/img/bkgr8.jpg");
+            margin-left: 0px;
+            color: #fff;
+            text-align: center;
+            padding: 10em;
+            
+        }
+
+        nav {
+            background-color: #675DB7;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #E65FD5;
+        }
+
+        section {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            justify-content: space-around;
+        }
+
+        .movie-card {
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 15px;
+            width: 200px;
+            text-align: center;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+            background-color: #E65FD5;
+        }
+
+        select, input {
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        .search-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .search-icon {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        .slideshow-container {
+            max-width: 1000px;
+            position: relative;
+            margin: auto;
+            margin-bottom: 20px;
+        }
+
+        .mySlides {
+            display: none;
+        }
+
+        .slide-img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        
+        <h1 style="color: #E65FD5;margin-left: -60px;">WELCOME</h1>
+        <h1 style="color: #E65FD5;margin-left: -60px;">TO</h1>
+        <h1 style="color: #E65FD5;margin-left: -60px;">CINEMA</h1>
+        
+    </header>
+
+    <nav>
+        <a href="#">Trang chủ</a>
+        <a href="#">Phim hot</a>
+        <a href="#">Phim sắp chiếu</a>
+        <a href="#">Phim bộ</a>
+        <a href="#">Phim lẻ</a>
+        <a href="#">Liên hệ</a>
+        <a href="#">Tài khoản </a>
+        <a href="#">Đăng xuất</a>
+        
+
+    </nav>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Tìm kiếm...">
+        <img src="./assets/img/search.jpg" alt="Search" class="search-icon" onclick="searchMovies()" style="width: 20px; height: 20px;">
+        
+    </div>
+
+    <div class="slideshow-container">
+        <div class="mySlides">
+            <img class="slide-img" src="./assets/img/arcane.jpg" alt="Slide 1">
+        </div>
+
+        <div class="mySlides">
+            <img class="slide-img" src="./assets/img/avengers-infinity-war-nbfi4i9a0zvknuw5.jpg" alt="Slide 2">
+        </div>
+
+        <div class="mySlides">
+            <img class="slide-img" src="./assets/img/marvel-studios-loki-poster-hk4ll67ig4742h33.jpg" alt="Slide 3">
+        </div>
+    </div>
+
+    <section id="movieList">
+        <!-- Danh sách phim sẽ được hiển thị ở đây -->
+    </section>
+
+    <footer>
+        <center >
+            <div class="" >
+                <p>&copy;2023 Quản lý rạp chiếu phim </p>
+            </div>
+            
+        </center>
+        
+    </footer>
+
+    <script>
+        const movies = [
+            { title: 'Avengers: Endgame', genre: 'action' },
+            { title: 'The Shawshank Redemption', genre: 'drama' },
+            { title: 'Inception', genre: 'sci-fi' },
+            { title: 'The Godfather', genre: 'drama' },
+            { title: 'The Dark Knight', genre: 'action' },
+            { title: 'The Dark Light', genre: 'romance' },
+            { title: 'Rock the Kasbah', genre: 'action' },
+            { title: 'Loki - Part 2', genre: 'sci-fi' },
+            { title: 'The Hunger Games: Mockingjay - Part 2', genre: 'sci-fi' },
+            { title: 'Thor - Part 4', genre: 'sci-fi' },
+
+            // Thêm các phim khác tại đây
+        ];
+
+        const movieListSection = document.getElementById('movieList');
+        const genreFilter = document.createElement('select');
+        const searchInput = document.getElementById('searchInput');
+
+        // Tạo các option cho dropdown thể loại
+        const genres = ['all', 'action', 'drama', 'sci-fi'];
+        genres.forEach(genre => {
+            const option = document.createElement('option');
+            option.value = genre;
+            option.text = capitalizeFirstLetter(genre);
+            genreFilter.add(option);
+        });
+
+        // Hiển thị dropdown thể loại
+        document.body.insertBefore(genreFilter, movieListSection);
+
+        function filterMovies() {
+            const selectedGenre = genreFilter.value;
+            const filteredMovies = selectedGenre === 'all' ? movies : movies.filter(movie => movie.genre === selectedGenre);
+
+            displayMovies(filteredMovies);
+        }
+
+        function searchMovies() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const searchedMovies = movies.filter(movie => movie.title.toLowerCase().includes(searchTerm));
+
+            displayMovies(searchedMovies);
+        }
+
+        function displayMovies(moviesToDisplay) {
+            movieListSection.innerHTML = '';
+
+            moviesToDisplay.forEach(movie => {
+                const movieCard = document.createElement('div');
+                movieCard.classList.add('movie-card');
+                movieCard.innerHTML = `
+                    <h2>${movie.title}</h2>
+                    <p>${capitalizeFirstLetter(movie.genre)}</p>
+                `;
+                movieListSection.appendChild(movieCard);
+            });
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Hiển thị tất cả phim khi trang được tải
+        displayMovies(movies);
+
+       
+        let slideIndex = 0;
+        showSlides();
+
+        function showSlides() {
+            const slides = document.getElementsByClassName('mySlides');
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].style.display = 'none';
+            }
+            slideIndex++;
+            if (slideIndex > slides.length) { slideIndex = 1 }
+            slides[slideIndex - 1].style.display = 'block';
+            setTimeout(showSlides, 3000); // Thay đổi hình ảnh sau mỗi 2 giây
+        }
+    </script>
+
+</body>
+</html>

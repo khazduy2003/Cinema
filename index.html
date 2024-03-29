@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="./assets/img/logo.ico" type="img/x-icon">
+    <title>Welcome to Cinema</title>
+    <link rel="stylesheet" href="./fontawesome-free-6.4.2-web/css/all.css" class="">
+</head>
+<body>
+    <div class="box">
+        <div class="container">
+
+        <form id="loginForm" onsubmit="submitForm(event)">
+
+            <div class="top-header" style="margin-top: 60px;">
+                    
+                <header style="font-size: 50px;" >Login</header>
+            </div>
+
+            <div class="input-field">
+                <input type="text" id="username" name="username" class="input" placeholder="Username" required>
+                <i class="bx bx-user"></i>
+            </div>
+
+            <div class="input-field">
+                <input type="password" id="password" name="password" class="input" placeholder="Password" required>
+                <i class="bx bx-lock-alt"></i>
+            </div>
+
+            <div class="bottom">
+                <div class="">You are:
+                    <input type="radio" name="#" value="" checked>Customer
+                    <input type="radio" name="#" value="" checked>Staff
+                    <input type="radio" name="#" value="" checked>Manager
+                </div>
+                
+            </div> <br>
+            <div class="input-field">
+                <input type="submit" class="submit" value="Login">
+            </div>
+
+        </form>
+        
+    <script>
+        function submitForm(event) {
+            // Ngăn chặn sự kiện mặc định của form
+            event.preventDefault();
+
+            // Lấy giá trị từ các trường input
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+
+            // Kiểm tra thông tin đăng nhập (ở đây chỉ là một ví dụ đơn giản)
+            if (username === "khanhduy2003" && password === "khanhduy2003") {
+                // Nếu thông tin đúng, chuyển hướng đến giao diện khác
+                window.location.href = "test.html";
+            } else {
+                // Nếu thông tin không đúng, thông báo lỗi
+                alert("Invalid username or password. Please try again.");
+            }
+        }
+    </script>
+
+
+            <div class="bottom">
+                <div class="left">
+                    <input type="checkbox"  id="check">
+                    <label for="check"> Remember Me</label>
+                </div>
+                <div class="right">
+                    <label><a href="./forgotPass.html">Forgot password?</a></label>
+                    
+                    
+                </div>
+            </div>
+            <span>Have an account? <a href="./signIn.html" >  Sign in</a> </span> 
+        </div>
+    </div>
+</body>
+</html>
